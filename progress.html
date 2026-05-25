@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Progress</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: transparent;
+    padding: 6px 4px;
+    overflow: hidden;
+  }
+
+  .funnel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    width: 100%;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    position: relative;
+    height: 28px;
+    padding: 0 10px 0 16px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
+    transition: all 0.15s ease;
+    background: #e8e8e8;
+    color: #666;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50%);
+  }
+
+  .step:first-child {
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
+    padding-left: 10px;
+  }
+
+  .step.done {
+    background: #4CAF50;
+    color: #fff;
+  }
+
+  .step.active {
+    background: #1976D2;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .step.lost {
+    background: #e53935;
+    color: #fff;
+  }
+
+  .step:hover {
+    filter: brightness(0.92);
+  }
+
+  .step .label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 90px;
+  }
+</style>
+</head>
+<body>
+
+<div class="funnel" id="funnel"></div>
+
+<script>
+const STAGES = [
+  { id: '01', name: 'Inquiry Received' },
+  { id: '02', name: 'No response' },
+  { id: '03', name: 'Information sent' },
+  { id: '04', name: 'Meeting is scheduled' },
+  { id: '05', name: 'Meeting was held' },
+  { id: '06', name: 'School tour' },
+  { id: '07', name: 'Oxford Placement Test' },
+  { id: '08', name: 'Confirmation of enrolment' },
+  { id: '09', name: 'Preparing LOG and School Service Agreement' },
+  { id: '10', name: 'Preparing document' },
+  { id: '11', name: 'Expecting document signage' },
+  { id: '12', name: 'Pending payment' },
+  { id: '13', name: 'Payment received' },
+  { id: '14', name: 'Unsuccessful Lead' },
+];
+
+let currentStage = null;
+
+function render(activeId) {
+  const funnel = document.getElementById('funnel');
+  const activeIdx = STAGES.findIndex(s => s.id === activeId);
+
+  funnel.innerHTML = STAGES.map((s, i) => {
+    let cls = 'step';
+    if (s.id === '14') cls += ' lost';
+    else if (i < activeIdx) cls += ' done';
+    else if (s.id === activeId) cls += ' active';
+
+    return `<div class="${cls}" data-id="${s.id}" title="${s.name}">
+      <span class="label">${s.id}. ${s.name}</span>
+    </div>`;
+  }).join('');
+
+  funnel.querySelectorAll('.step').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.id;
+      const stage = STAGES.find(s => s.id === id);
+      window.parent.postMessage({
+        type: 'stageChange',
+        stageId: id,
+        stageName: `${id}. ${stage.name}`
+      }, '*');
+      render(id);
+    });
+  });
+}
+
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'setStage') {
+    render(e.data.stageId);
+  }
+});
+
+// Default render
+render('01');
+</script>
+</body>
+</html>
