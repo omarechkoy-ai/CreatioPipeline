@@ -16,8 +16,8 @@
 
   .funnel {
     display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
+    flex-wrap: nowrap;
+    gap: 2px;
     width: 100%;
   }
 
@@ -30,13 +30,13 @@
     font-size: 11px;
     font-weight: 500;
     cursor: pointer;
-    border-radius: 2px;
     white-space: nowrap;
-    flex-shrink: 1;
+    flex: 1 1 0;
     min-width: 0;
-    transition: all 0.15s ease;
-    background: #e8e8e8;
-    color: #666;
+    max-width: 100%;
+    transition: flex 0.2s ease, background 0.15s;
+    background: #e0e0e0;
+    color: #555;
     clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50%);
   }
 
@@ -45,8 +45,14 @@
     padding-left: 10px;
   }
 
+  .step:hover {
+    flex: 3 1 0;
+    filter: brightness(0.93);
+    z-index: 10;
+  }
+
   .step.done {
-    background: #4CAF50;
+    background: #66BB6A;
     color: #fff;
   }
 
@@ -54,22 +60,23 @@
     background: #1976D2;
     color: #fff;
     font-weight: 600;
+    flex: 2 1 0;
+  }
+
+  .step.active:hover {
+    flex: 3 1 0;
   }
 
   .step.lost {
-    background: #e53935;
+    background: #EF5350;
     color: #fff;
-  }
-
-  .step:hover {
-    filter: brightness(0.92);
   }
 
   .step .label {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 90px;
+    width: 100%;
   }
 </style>
 </head>
@@ -87,15 +94,13 @@ const STAGES = [
   { id: '06', name: 'School tour' },
   { id: '07', name: 'Oxford Placement Test' },
   { id: '08', name: 'Confirmation of enrolment' },
-  { id: '09', name: 'Preparing LOG and School Service Agreement' },
+  { id: '09', name: 'Preparing LOG and SSA' },
   { id: '10', name: 'Preparing document' },
   { id: '11', name: 'Expecting document signage' },
   { id: '12', name: 'Pending payment' },
   { id: '13', name: 'Payment received' },
   { id: '14', name: 'Unsuccessful Lead' },
 ];
-
-let currentStage = null;
 
 function render(activeId) {
   const funnel = document.getElementById('funnel');
@@ -107,7 +112,7 @@ function render(activeId) {
     else if (i < activeIdx) cls += ' done';
     else if (s.id === activeId) cls += ' active';
 
-    return `<div class="${cls}" data-id="${s.id}" title="${s.name}">
+    return `<div class="${cls}" data-id="${s.id}">
       <span class="label">${s.id}. ${s.name}</span>
     </div>`;
   }).join('');
@@ -132,7 +137,6 @@ window.addEventListener('message', e => {
   }
 });
 
-// Default render
 render('01');
 </script>
 </body>
